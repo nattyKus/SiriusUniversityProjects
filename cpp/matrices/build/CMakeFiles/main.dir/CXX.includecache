@@ -1,0 +1,32 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/Users/natalya/Desktop/Study/cpp_sirius/matrices/CSR.hpp
+vector
+-
+istream
+-
+string
+-
+sstream
+-
+algorithm
+-
+
+/Users/natalya/Desktop/Study/cpp_sirius/matrices/main.cpp
+CSR.hpp
+/Users/natalya/Desktop/Study/cpp_sirius/matrices/CSR.hpp
+fstream
+-
+sstream
+-
+string
+-
+iostream
+-
+
