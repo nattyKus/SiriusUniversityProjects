@@ -7,10 +7,10 @@ from scipy.stats import rankdata
 class Alpha():
     '''Class for alpha operations'''
 
-    def __init__(self, weights_path, close_path, vwap_path):
-        self.weights = pd.read_parquet(weights_path)
-        self.close_df = pd.read_parquet(close_path)
-        self.vwap_df = pd.read_parquet(vwap_path)
+    def __init__(self, weights_df, close_df, vwap_df):
+        self.weights = weights_df
+        self.close_df = close_df
+        self.vwap_df = vwap_df
         self.shape = self.weights.shape
         self.metrics = None
     
@@ -68,7 +68,7 @@ class Alpha():
 
         drawdown = cum_daily_pnl - cum_daily_pnl.cummax()
         max_drawdown = drawdown.min()
-        margin = returns.sum(axis=1).mean() / daily_tvr.mean()
+        margin = daily_pnl.mean() / daily_tvr.mean()
 
         self.metrics = dict(
             daily_pnl=daily_pnl,
@@ -79,24 +79,31 @@ class Alpha():
             margin=margin)
         
         if display:
-            plt.plot(daily_pnl.index, daily_pnl.cumsum(), label=label)
+            plt.plot(daily_pnl.index, cum_daily_pnl, label=label)
 
             print(label)
             print()
-            print("Annualized Sharpe Ratio = {}".format(annual_sharpe))
-            print("Daily tvr = {}%".format(np.round(100 * daily_tvr.mean(), 3)))
-            print("Annual return = {}%".format(np.round(annual_return, 3)))
-            print("Max Drawdown = {}%".format(np.round(max_drawdown, 3)))
-            print("Margin = {}%".format(np.round(margin, 3)))
+            print("Annualized Sharpe Ratio = {}".format(np.round(annual_sharpe, 2)))
+            print("Daily tvr = {}%".format(np.round(100 * daily_tvr.mean(), 2)))
+            print("Annual return = {}%".format(np.round(100 * annual_return, 2)))
+            print("Max Drawdown = {}%".format(np.round(100 * max_drawdown, 2)))
+            print("Margin = {} bp".format(np.round(margin, 2)))
             print()
+
+        return
 
     def set_reversion_window(self, window):
         self.weights = self.weights.rolling(window).sum()
         
-    def truncate_by_date_period(self, date_period):
+    def filter_date(self, date_period):
         self.weights = self.weights.loc[date_period[0]: date_period[1]]
         self.close_df = self.close_df.loc[date_period[0]: date_period[1]]
         self.vwap_df = self.vwap_df.loc[date_period[0]: date_period[1]]
+    
+    def filter_tickers(self, tickers):
+        self.weights = self.weights[tickers]
+        self.close_df = self.close_df[tickers]
+        self.vwap_df = self.vwap_df[tickers]
 
     def save_to_local(self, path):
         self.weights.to_parquet(path, compression='gzip')
